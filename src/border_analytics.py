@@ -4,25 +4,27 @@ import sys
 
 
 if not len(sys.argv) == 3:
-    print ("Invalid number of arguments. Run as: python3.7 ./src/border_analytics.py ./input/Border_Crossing_Entry_data.csv ./output/report.csv")
+    print ("Invalid number of arguments. Run as: python2 ./src/border_analytics.py ./input/Border_Crossing_Entry_data.csv ./output/report.csv")
     sys.exit()
 
 input_file = sys.argv[1]
 output_file = sys.argv[2]
 
-
+# Converts data into a nested dictionary format with (Border , Measure):{Date:Value}
 def dic_conversion(data):
     for row in data:
         border, date, measure, value = row[3], row[4], row[5], row[6]
         final_dict.setdefault((border,measure),{}).setdefault(date,[]).append(int(value))
     return final_dict
 
+# Calculates the sum of the list for crossings using a particular measure 
 def get_sum(final_dict):
     for border_key, date_key in final_dict.items():
         for month in date_key.keys():
             date_key[month] = sum(date_key[month])
     return final_dict
 
+# Calculating running monthly average of total number of crossings using a measure for a border.
 def get_monthly_avg(final_dict):
     average_dict = {}
     for border_key, date_key in final_dict.items():
@@ -42,6 +44,7 @@ def get_monthly_avg(final_dict):
             average_dict[date_key[v]] = avg_val
     return average_dict
 
+# Converts the dictionary into a list format which is similar to the output format
 def get_list_from_dict(final_dict):
     temp_list = []
     for k, v in final_dict.items():
@@ -52,6 +55,7 @@ def get_list_from_dict(final_dict):
             temp_list.append([k[0], k[1], list(v.keys())[0], list(v.values())[0]])
     return temp_list
 
+# Formatting the list and appending the averages to the corresponding measure
 def get_final_format(temp_list):
     for i in range(0, len(temp_list)):
         if temp_list[i][3] in average_dict.keys():
@@ -62,7 +66,7 @@ def get_final_format(temp_list):
 
 
 final_dict = {}
-#Loading data as a nested dictionary in the format (Border, Measure):Date:Value
+#Loading data as a nested dictionary in the format (Border, Measure):{Date:Value}
 with open(input_file, 'r') as file:
     data = csv.reader(file, delimiter=',')
     fields = next(data)
@@ -72,7 +76,7 @@ with open(input_file, 'r') as file:
 final_dict = get_sum(final_dict)
 #print(final_dict)
 
-# Calculating running monthly average of total number of crossings for that type of crossing and border.
+# Calculating running monthly average of total number of crossings using a measure for a border.
 average_dict = get_monthly_avg(final_dict)
 #print(average_dict)
 
